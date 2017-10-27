@@ -1,10 +1,12 @@
 <template>
   <div class="datepicker">
     <template v-if="hasInput">
-      <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder"
-          :style="{width:width}"
-          @click="inputClick"
-          v-model="inputValue"/>
+      <slot name="input" :class="inputClass" :placeholder="placeholder" :style="{width:width}" :inputClick="inputClick" :value="inputValue">
+        <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder"
+            :style="{width:width}"
+            @click="inputClick"
+            v-model="inputValue"/>
+      </slot>
       <button v-if="clearButton && value" type="button" class="close" @click="inputValue = ''">
         <span>&times;</span>
       </button>
