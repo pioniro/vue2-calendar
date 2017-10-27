@@ -102,7 +102,7 @@ export default {
     firstDayOfWeek: {
       type: Number,
       default () {
-          return 7
+        return 7
       }
     },
     disabledRange: {
@@ -463,22 +463,31 @@ export default {
     },
     dateIsEnabled (date) {
       let enabled = true
-      this.disabledRange.forEach(function (e) {
-        if (enabled) {
-          if (Array.isArray(e)) {
+
+      if (this.disabledRange.length === 2 && this.disabledRange[0] && Array.isArray(this.disabledRange[0])) {
+        this.disabledRange.forEach(function (e) {
+          if (enabled) {
             enabled = !inRange(e[0], e[1], date)
           }
-        }
-      })
+        })
+      } else if (this.disabledRange.length === 2) {
+        enabled = !inRange(this.disabledRange[0], this.disabledRange[1], date)
+      }
 
-      enabled && this.enabledRange.forEach(function (e) {
-        if (enabled) {
-          if (Array.isArray(e)) {
-            enabled = inRange(e[0], e[1], date)
-          }
+      if (enabled && this.enabledRange.length === 2) {
+        if (this.enabledRange[0] && Array.isArray(this.enabledRange[0])) {
+          this.enabledRange.forEach(function (e) {
+            if (enabled) {
+              if (Array.isArray(e)) {
+                enabled = inRange(e[0], e[1], date)
+              }
+            }
+          })
+        } else {
+          enabled = inRange(this.enabledRange[0], this.enabledRange[1], date)
         }
-      });
-      return enabled;
+      }
+      return enabled
     },
     getDateRange () {
       this.dateRange = []
@@ -505,14 +514,16 @@ export default {
         }
         const dayCount = this.getDayCount(time.year, time.month)
         if (firstDayWeek > 1) {
+          let date
           const preMonth = this.getYearMonth(time.year, time.month - 1)
           const prevMonthDayCount = this.getDayCount(preMonth.year, preMonth.month)
           for (let i = 1; i < firstDayWeek; i++) {
             const dayText = prevMonthDayCount - firstDayWeek + i + 1
+            date = new Date(preMonth.year, preMonth.month, dayText)
             this.dateRange[p].push({
               text: dayText,
-              date: new Date(preMonth.year, preMonth.month, dayText),
-              sclass: 'datepicker-item-gray'
+              date: date,
+              sclass: this.dateIsEnabled(date) ? 'datepicker-item-gray' : 'datepicker-item-disable'
             })
           }
         }
@@ -543,13 +554,15 @@ export default {
           })
         }
         if (this.dateRange[p].length < 42) {
+          let date
           const nextMonthNeed = 42 - this.dateRange[p].length
           const nextMonth = this.getYearMonth(time.year, time.month + 1)
           for (let i = 1; i <= nextMonthNeed; i++) {
+            date = new Date(nextMonth.year, nextMonth.month, i)
             this.dateRange[p].push({
               text: i,
-              date: new Date(nextMonth.year, nextMonth.month, i),
-              sclass: 'datepicker-item-gray'
+              date: date,
+              sclass: this.dateIsEnabled(date) ? 'datepicker-item-gray' : 'datepicker-item-disable'
             })
           }
         }
@@ -558,25 +571,19 @@ export default {
   }
 }
 
-
-function toDate(str){
-    if(str instanceof Date){
-        return str;
-    } else {
-        return new Date(str);
-    }
-    return null;
+function toDate (str) {
+  if (str instanceof Date) {
+    return str
+  }
+  return null
 }
-function inRange(from , to, date) {
-    from = toDate(from);
-    to = toDate(to);
-    if(from && from >= date){
-        return false;
-    }
-    if(to && to <= date){
-        return false;
-    }
-    return true;
+function inRange (from, to, date) {
+  from = toDate(from)
+  to = toDate(to)
+  if (from instanceof Date && date <= from) {
+    return false
+  }
+  return !(to instanceof Date && (date >= to))
 }
 </script>
 
