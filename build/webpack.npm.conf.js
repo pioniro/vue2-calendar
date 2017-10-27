@@ -75,7 +75,7 @@ function build(name) {
     ]
   }
   webpackConfig.entry = {};
-  webpackConfig.entry[name.replace(/\.(js|vue)/, '')] = "./"
+  webpackConfig.entry[name.replace(/\.(js|vue)/, '')] = "./root.js"
   webpackConfig = merge(webpackConfig, {
     module: {
       rules: utils.styleLoaders({

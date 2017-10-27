@@ -102,7 +102,20 @@ export default {
     firstDayOfWeek: {
       type: Number,
       default () {
-        return 7
+          return 7
+      }
+    },
+    disabledRange: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    // OR
+    enabledRange: {
+      type: Array,
+      default () {
+        return []
       }
     },
     width: {
@@ -448,6 +461,25 @@ export default {
       }
       return dict[month]
     },
+    dateIsEnabled (date) {
+      let enabled = true
+      this.disabledRange.forEach(function (e) {
+        if (enabled) {
+          if (Array.isArray(e)) {
+            enabled = !inRange(e[0], e[1], date)
+          }
+        }
+      })
+
+      enabled && this.enabledRange.forEach(function (e) {
+        if (enabled) {
+          if (Array.isArray(e)) {
+            enabled = inRange(e[0], e[1], date)
+          }
+        }
+      });
+      return enabled;
+    },
     getDateRange () {
       this.dateRange = []
       this.decadeRange = []
@@ -491,6 +523,9 @@ export default {
           this.disabledDaysOfWeek.forEach((el) => {
             if (week === parseInt(el, 10)) sclass = 'datepicker-item-disable'
           })
+          if (!this.dateIsEnabled(date)) {
+            sclass = 'datepicker-item-disable'
+          }
           if (i === this.currDate.getDate()) {
             if (this.inputValue) {
               const valueDate = this.parse(this.inputValue)
@@ -521,6 +556,27 @@ export default {
       }
     }
   }
+}
+
+
+function toDate(str){
+    if(str instanceof Date){
+        return str;
+    } else {
+        return new Date(str);
+    }
+    return null;
+}
+function inRange(from , to, date) {
+    from = toDate(from);
+    to = toDate(to);
+    if(from && from >= date){
+        return false;
+    }
+    if(to && to <= date){
+        return false;
+    }
+    return true;
 }
 </script>
 
