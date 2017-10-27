@@ -2,7 +2,7 @@
   <div class="datepicker">
     <template v-if="hasInput">
       <slot name="input" :class="inputClass" :placeholder="placeholder" :style="{width:width}" :inputClick="inputClick" :value="inputValue">
-        <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder"
+        <input class="form-control datepicker-input" :class="inputClass" type="text" :placeholder="placeholder"
             :style="{width:width}"
             @click="inputClick"
             v-model="inputValue"/>
@@ -215,7 +215,10 @@ export default {
   computed: {
     text () {
       return this.translations(this.lang)
-    }
+    },
+    inputClass () {
+      return {'with-reset-button': this.clearButton}
+    },
   },
   methods: {
     handleMouseOver (event) {
