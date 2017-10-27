@@ -1,10 +1,12 @@
 <template>
   <div class="datepicker">
     <template v-if="hasInput">
-      <input class="form-control datepicker-input" :class="{'with-reset-button': clearButton}" type="text" :placeholder="placeholder"
-          :style="{width:width}"
-          @click="inputClick"
-          v-model="inputValue"/>
+      <slot name="input" :class="inputClass" :placeholder="placeholder" :style="{width:width}" :inputClick="inputClick" :value="inputValue">
+        <input class="form-control datepicker-input" :class="inputClass" type="text" :placeholder="placeholder"
+            :style="{width:width}"
+            @click="inputClick"
+            v-model="inputValue"/>
+      </slot>
       <button v-if="clearButton && value" type="button" class="close" @click="inputValue = ''">
         <span>&times;</span>
       </button>
@@ -19,7 +21,7 @@
           <div class="datepicker-body">
             <p @click="switchMonthView">{{stringifyDayHeader(currDate, pan)}}</p>
             <div class="datepicker-weekRange">
-              <span v-for="w in text.daysOfWeek">{{w}}</span>
+              <span v-for="w in daysOfWeek">{{w}}</span>
             </div>
             <div class="datepicker-dateRange">
               <span v-for="d in dateRange[pan]" class="day-cell" :class="getItemClasses(d)" :data-date="stringify(d.date)" @click="daySelect(d.date, $event)"><div>
@@ -47,8 +49,7 @@
             <p @click="switchDecadeView">{{stringifyYearHeader(currDate, pan)}}</p>
             <div class="datepicker-monthRange">
               <template v-for="(m, $index) in text.months">
-                <span :class="{'datepicker-dateRange-item-active':
-                    (text.months[parse(value).getMonth()]  === m) &&
+                <span :class="{'datepicker-dateRange-item-active': (text.months[parse(value).getMonth()]  === m) &&
                     currDate.getFullYear() + pan === parse(value).getFullYear()}"
                     @click="monthSelect(stringifyYearHeader(currDate, pan), $index)"
                   >{{m.substr(0,3)}}</span>
@@ -93,6 +94,25 @@ export default {
       default: 'MM/dd/yyyy'
     },
     disabledDaysOfWeek: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    firstDayOfWeek: {
+      type: Number,
+      default () {
+          return 7
+      }
+    },
+    disabledRange: {
+      type: Array,
+      default () {
+        return []
+      }
+    },
+    // OR
+    enabledRange: {
       type: Array,
       default () {
         return []
@@ -213,6 +233,12 @@ export default {
   computed: {
     text () {
       return this.translations(this.lang)
+    },
+    inputClass () {
+      return {'with-reset-button': this.clearButton}
+    },
+    daysOfWeek () {
+      return [].concat(this.text.daysOfWeek.slice(this.firstDayOfWeek - 1), this.text.daysOfWeek.slice(0, this.firstDayOfWeek - 1))
     }
   },
   methods: {
@@ -256,7 +282,7 @@ export default {
     translations (lang) {
       lang = lang || 'en'
       let text = {
-        daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+        daysOfWeek: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
         limit: 'Limit reached ({{limit}} items max).',
         loading: 'Loading...',
         minLength: 'Min. Length',
@@ -435,6 +461,25 @@ export default {
       }
       return dict[month]
     },
+    dateIsEnabled (date) {
+      let enabled = true
+      this.disabledRange.forEach(function (e) {
+        if (enabled) {
+          if (Array.isArray(e)) {
+            enabled = !inRange(e[0], e[1], date)
+          }
+        }
+      })
+
+      enabled && this.enabledRange.forEach(function (e) {
+        if (enabled) {
+          if (Array.isArray(e)) {
+            enabled = inRange(e[0], e[1], date)
+          }
+        }
+      });
+      return enabled;
+    },
     getDateRange () {
       this.dateRange = []
       this.decadeRange = []
@@ -454,7 +499,7 @@ export default {
         }
         this.dateRange[p] = []
         const currMonthFirstDay = new Date(time.year, time.month, 1)
-        let firstDayWeek = currMonthFirstDay.getDay() + 1
+        let firstDayWeek = (7 - this.firstDayOfWeek + currMonthFirstDay.getDay() + 1) % 7
         if (firstDayWeek === 0) {
           firstDayWeek = 7
         }
@@ -478,6 +523,9 @@ export default {
           this.disabledDaysOfWeek.forEach((el) => {
             if (week === parseInt(el, 10)) sclass = 'datepicker-item-disable'
           })
+          if (!this.dateIsEnabled(date)) {
+            sclass = 'datepicker-item-disable'
+          }
           if (i === this.currDate.getDate()) {
             if (this.inputValue) {
               const valueDate = this.parse(this.inputValue)
@@ -508,6 +556,27 @@ export default {
       }
     }
   }
+}
+
+
+function toDate(str){
+    if(str instanceof Date){
+        return str;
+    } else {
+        return new Date(str);
+    }
+    return null;
+}
+function inRange(from , to, date) {
+    from = toDate(from);
+    to = toDate(to);
+    if(from && from >= date){
+        return false;
+    }
+    if(to && to <= date){
+        return false;
+    }
+    return true;
 }
 </script>
 

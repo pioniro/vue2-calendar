@@ -21,7 +21,7 @@
           <div class="datepicker-body">
             <p @click="switchMonthView">{{stringifyDayHeader(currDate, pan)}}</p>
             <div class="datepicker-weekRange">
-              <span v-for="w in text.daysOfWeek">{{w}}</span>
+              <span v-for="w in daysOfWeek">{{w}}</span>
             </div>
             <div class="datepicker-dateRange">
               <span v-for="d in dateRange[pan]" class="day-cell" :class="getItemClasses(d)" :data-date="stringify(d.date)" @click="daySelect(d.date, $event)"><div>
@@ -49,8 +49,7 @@
             <p @click="switchDecadeView">{{stringifyYearHeader(currDate, pan)}}</p>
             <div class="datepicker-monthRange">
               <template v-for="(m, $index) in text.months">
-                <span :class="{'datepicker-dateRange-item-active':
-                    (text.months[parse(value).getMonth()]  === m) &&
+                <span :class="{'datepicker-dateRange-item-active': (text.months[parse(value).getMonth()]  === m) &&
                     currDate.getFullYear() + pan === parse(value).getFullYear()}"
                     @click="monthSelect(stringifyYearHeader(currDate, pan), $index)"
                   >{{m.substr(0,3)}}</span>
@@ -98,6 +97,12 @@ export default {
       type: Array,
       default () {
         return []
+      }
+    },
+    firstDayOfWeek: {
+      type: Number,
+      default () {
+        return 7
       }
     },
     width: {
@@ -219,6 +224,9 @@ export default {
     inputClass () {
       return {'with-reset-button': this.clearButton}
     },
+    daysOfWeek () {
+      return [].concat(this.text.daysOfWeek.slice(this.firstDayOfWeek - 1), this.text.daysOfWeek.slice(0, this.firstDayOfWeek - 1))
+    }
   },
   methods: {
     handleMouseOver (event) {
@@ -261,7 +269,7 @@ export default {
     translations (lang) {
       lang = lang || 'en'
       let text = {
-        daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+        daysOfWeek: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
         limit: 'Limit reached ({{limit}} items max).',
         loading: 'Loading...',
         minLength: 'Min. Length',
@@ -459,7 +467,7 @@ export default {
         }
         this.dateRange[p] = []
         const currMonthFirstDay = new Date(time.year, time.month, 1)
-        let firstDayWeek = currMonthFirstDay.getDay() + 1
+        let firstDayWeek = (7 - this.firstDayOfWeek + currMonthFirstDay.getDay() + 1) % 7
         if (firstDayWeek === 0) {
           firstDayWeek = 7
         }

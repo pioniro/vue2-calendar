@@ -28,7 +28,10 @@ rm(path.join(config.npm.assetsRoot), err => {
     }) + '\n\n')
 
     if (stats.hasErrors()) {
-        console.log(stats);
+      console.log(stats);
+      stats.stats.forEach((stat) => {
+        console.log(stat.compilation.errors)
+      })
       console.log(chalk.red('  Build failed with errors.\n'))
       process.exit(1)
     }
