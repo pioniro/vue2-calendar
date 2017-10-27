@@ -1,1 +1,1 @@
-module.exports = require('./src/components/Calendar.vue')
+module.exports = require('./lib/Calendar.vue')
