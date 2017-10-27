@@ -580,10 +580,11 @@ function toDate (str) {
 function inRange (from, to, date) {
   from = toDate(from)
   to = toDate(to)
-  if (from instanceof Date && date <= from) {
+  if (from instanceof Date && date < from){
     return false
   }
-  return !(to instanceof Date && (date >= to))
+
+  return !(to instanceof Date && (date > to))
 }
 </script>
 
