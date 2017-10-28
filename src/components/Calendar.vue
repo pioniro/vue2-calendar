@@ -366,18 +366,17 @@ export default {
       let el = event.target
       if (el.classList[0] === 'datepicker-item-disable') {
         return false
-      } else {
-        this.$emit('input', this.stringify(date))
-        if (this.hasInput) {
-          this.currDate = date
-          this.inputValue = this.stringify(this.currDate)
-          this.displayDayView = false
-          if (this.rangeStatus === 1) {
-            this.eventbus.$emit('calendar-rangestart', this.currDate)
-          }
-        } else {
-          this.onDayClick(date, this.stringify(date))
+      }
+      this.$emit('input', this.stringify(date))
+      if (this.hasInput) {
+        this.currDate = date
+        this.inputValue = this.stringify(this.currDate)
+        this.displayDayView = false
+        if (this.rangeStatus === 1) {
+          this.eventbus.$emit('calendar-rangestart', this.currDate)
         }
+      } else {
+        this.onDayClick(date, this.stringify(date))
       }
     },
     switchMonthView () {
