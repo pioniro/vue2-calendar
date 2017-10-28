@@ -367,6 +367,7 @@ export default {
       if (el.classList[0] === 'datepicker-item-disable') {
         return false
       } else {
+        this.$emit('input', this.stringify(date))
         if (this.hasInput) {
           this.currDate = date
           this.inputValue = this.stringify(this.currDate)
@@ -444,6 +445,9 @@ export default {
     },
     parse (str = this.inputValue) {
       let date
+      if (!str) {
+        return new Date()
+      }
       if (str.length === 10 && (this.dateFormat === 'dd-MM-yyyy' || this.dateFormat === 'dd/MM/yyyy')) {
         date = new Date(str.substring(6, 10), str.substring(3, 5) - 1, str.substring(0, 2))
       } else {
