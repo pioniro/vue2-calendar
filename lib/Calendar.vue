@@ -1,10 +1,12 @@
 <template>
   <div class="datepicker">
     <template v-if="hasInput">
-      <slot name="input" :class="inputClass" :placeholder="placeholder" :style="{width:width}" :inputClick="inputClick" :value="inputValue">
+      <slot name="input" :class="inputClass" :placeholder="placeholder" :style="{width:width}" :close="close" :inputClick="inputClick" :value="inputValue">
         <input class="form-control datepicker-input" :class="inputClass" type="text" :placeholder="placeholder"
             :style="{width:width}"
             @click="inputClick"
+            @focus="inputClick"
+            @blur="close"
             v-model="inputValue"/>
       </slot>
       <button v-if="clearButton && value" type="button" class="close" @click="inputValue = ''">
@@ -366,17 +368,17 @@ export default {
       let el = event.target
       if (el.classList[0] === 'datepicker-item-disable') {
         return false
-      } else {
-        if (this.hasInput) {
-          this.currDate = date
-          this.inputValue = this.stringify(this.currDate)
-          this.displayDayView = false
-          if (this.rangeStatus === 1) {
-            this.eventbus.$emit('calendar-rangestart', this.currDate)
-          }
-        } else {
-          this.onDayClick(date, this.stringify(date))
+      }
+      this.$emit('input', this.stringify(date))
+      if (this.hasInput) {
+        this.currDate = date
+        this.inputValue = this.stringify(this.currDate)
+        this.displayDayView = false
+        if (this.rangeStatus === 1) {
+          this.eventbus.$emit('calendar-rangestart', this.currDate)
         }
+      } else {
+        this.onDayClick(date, this.stringify(date))
       }
     },
     switchMonthView () {
@@ -444,6 +446,9 @@ export default {
     },
     parse (str = this.inputValue) {
       let date
+      if (!str) {
+        return new Date()
+      }
       if (str.length === 10 && (this.dateFormat === 'dd-MM-yyyy' || this.dateFormat === 'dd/MM/yyyy')) {
         date = new Date(str.substring(6, 10), str.substring(3, 5) - 1, str.substring(0, 2))
       } else {
